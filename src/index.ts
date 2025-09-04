@@ -18,7 +18,9 @@ async function sftpOperations() {
     const localFilePath = path.join(__dirname, "readme.txt");
     console.log("Local file path", localFilePath);
     const remoteFilePath = "/store/audio/readme.txt";
+    console.log(Date.now());
     await sftp.put(localFilePath, remoteFilePath);
+    console.log(Date.now());
     console.log(`File uploaded to ${remoteFilePath}`);
 
     // 4. Листинг файлов
