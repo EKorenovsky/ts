@@ -1,4 +1,3 @@
-import { sftpOperations } from "./modules/sftp";
 import { readSkudArray } from "./modules/jsonParser";
 
 const fileName = `${__dirname}/data/SKUD.json`;
