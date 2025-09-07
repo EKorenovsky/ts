@@ -1,39 +1,20 @@
-import * as path from "path";
-import Client from "ssh2-sftp-client";
+import { sftpOperations } from "./modules/sftp";
+import { readSkudArray } from "./modules/jsonParser";
 
-const sftpConfig = {
-  host: "95.216.200.243",
-  port: 22, // стандартный порт SFTP
-  username: "root",
-  password: "mKHc33PsmknUVks4JJTC",
-};
+const fileName = `${__dirname}/data/SKUD.json`;
 
-const sftp = new Client();
-
-async function sftpOperations() {
-  try {
-    // Подключение к серверу
-    await sftp.connect(sftpConfig);
-    console.log("Connected to SFTP server");
-    const localFilePath = path.join(__dirname, "readme.txt");
-    console.log("Local file path", localFilePath);
-    const remoteFilePath = "/store/audio/readme.txt";
-    console.log(Date.now());
-    await sftp.put(localFilePath, remoteFilePath);
-    console.log(Date.now());
-    console.log(`File uploaded to ${remoteFilePath}`);
-
-    // 4. Листинг файлов
-    const fileList = await sftp.list("/store");
-    console.log("Files in /remote:");
-    fileList.forEach((file) => console.log(`- ${file.name} (${file.type})`));
-  } catch (error) {
-    console.error("SFTP error:", error);
-  } finally {
-    // Отключение (обязательно!)
-    await sftp.end();
-    console.log("Connection closed");
+async function main() {
+  // Пример: читаем массив JOURNAL
+  let i = 0;
+  for await (const journalItem of readSkudArray(fileName, "JOURNAL")) {
+    //console.log("JOURNAL item:", journalItem);
+    i++;
+    if (i % 100000 === 0) {
+      console.log(`I: ${i}`);
+    }
   }
+  console.log(i);
+  // Можно аналогично для POINTS и STAFF
 }
 
-sftpOperations();
+main();
