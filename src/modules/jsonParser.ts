@@ -2,13 +2,13 @@ import * as fs from "fs";
 import { parser } from "stream-json";
 import { pick } from "stream-json/filters/Pick";
 import { streamArray } from "stream-json/streamers/StreamArray";
-
+const fsPromises = fs.promises;
 /**
  * Асинхронный генератор для чтения массива из SKUD
  * @param filePath - путь к JSON
  * @param arrayName - имя массива внутри SKUD: JOURNAL | AccessPoints | STAFF
  */
-export async function* readSkudArray(
+export async function* readLargeJsonFile(
   filePath: string,
   arrayName: "JOURNAL" | "AccessPoints" | "STAFF",
 ): AsyncGenerator<any> {
@@ -32,7 +32,7 @@ export async function* readSkudArray(
  * async function main() {
  *   // Пример: читаем массив JOURNAL
  *   let i = 0;
- *   for await (const journalItem of readSkudArray(fileName, "JOURNAL")) {
+ *   for await (const journalItem of readLargeJsonFile(fileName, "JOURNAL")) {
  *     //console.log("JOURNAL item:", journalItem);
  *     i++;
  *     if (i % 100000 === 0) {
@@ -43,3 +43,14 @@ export async function* readSkudArray(
  *   // Можно аналогично для POINTS и STAFF
  * }
  */
+
+export async function readSmallJsonFile<T = any>(filePath: string): Promise<T> {
+  try {
+    const rawData = await fsPromises.readFile(filePath, "utf-8");
+    return JSON.parse(rawData) as T;
+  } catch (error) {
+    throw new Error(
+      `Failed to load JSON from ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}

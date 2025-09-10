@@ -1,19 +1,36 @@
-import { readSkudArray } from "./modules/jsonParser";
+import { readLargeJsonFile, readSmallJsonFile } from "./modules/jsonParser";
+import { getBilling, getPoints, getSkud } from "./modules/modifySKUDData";
 
-const fileName = `${__dirname}/data/SKUD.json`;
+const fileNameSkud = `${__dirname}/data/SKUD_TEST_EASY.json`;
+const fileNamePoints = `${__dirname}/data/felixMaster_public_SkudPointData.json`;
+const fileNameBilling = `${__dirname}/data/felixMaster_public_SkudBillingData.json`;
 
 async function main() {
-  // Пример: читаем массив JOURNAL
-  let i = 0;
-  for await (const journalItem of readSkudArray(fileName, "JOURNAL")) {
-    //console.log("JOURNAL item:", journalItem);
-    i++;
-    if (i % 100000 === 0) {
-      console.log(`I: ${i}`);
-    }
-  }
-  console.log(i);
-  // Можно аналогично для POINTS и STAFF
+  const skud = await getSkud(fileNameSkud);
+  const billingData = await getBilling(fileNameBilling);
+  const [pointsData, dicPointIds] = await getPoints(fileNamePoints);
+
+  const newPoints = pointsData.filter(
+    (item) => skud.SKUD.AccessPoints.findIndex((p) => p.UIN === item.UIN) < 0,
+  );
+
+  skud.SKUD.AccessPoints = [...skud.SKUD.AccessPoints, ...newPoints];
+  skud.SKUD.JOURNAL = [
+    ...skud.SKUD.JOURNAL.filter((item) => item.UIN_PERSON !== 40955),
+  ];
+
+  const newUserJournal = billingData.map((item) => {
+    return {
+      EVENT_DATETIME: item.eventDate,
+      EVENT_TYPE: item.eventType,
+      UIN_PERSON: 40955,
+      UIN_ACCESSPOINT: dicPointIds[item.skudPointId],
+    };
+  });
+
+  skud.SKUD.JOURNAL = [...skud.SKUD.JOURNAL, ...newUserJournal];
+
+  return newUserJournal;
 }
 
 main();
