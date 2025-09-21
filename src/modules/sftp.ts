@@ -10,12 +10,12 @@ const sftpConfig = {
 
 const sftp = new Client();
 
-export async function sftpOperations() {
+export async function sftpOperations(fileName: string) {
   try {
     // Подключение к серверу
     await sftp.connect(sftpConfig);
     console.log("Connected to SFTP server");
-    const localFilePath = path.join(__dirname, "readme.txt");
+    const localFilePath = fileName;
     console.log("Local file path", localFilePath);
     const remoteFilePath = "/store/audio/readme.txt";
     console.log(Date.now());
